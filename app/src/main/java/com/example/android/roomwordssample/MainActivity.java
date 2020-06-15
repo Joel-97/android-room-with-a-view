@@ -16,6 +16,7 @@ package com.example.android.roomwordssample;
  * limitations under the License.
  */
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
@@ -46,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        RecyclerView recyclerView = findViewById(R.id.recyclerview);
+        final RecyclerView recyclerView = findViewById(R.id.recyclerview);
         final WordListAdapter adapter = new WordListAdapter(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -64,6 +66,28 @@ public class MainActivity extends AppCompatActivity {
                 adapter.setWords(words);
             }
         });
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT){
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Word myWord = adapter.getWordAtPosition(position);
+                Toast.makeText(MainActivity.this, "Palabra **" +
+                        myWord.getWord()+"** eliminada.", Toast.LENGTH_LONG).show();
+
+                // Delete the word
+                mWordViewModel.deleteWord(myWord);
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
